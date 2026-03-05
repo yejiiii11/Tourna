@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Endurance Sports</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --orange: #F47B20; --orange-light: #FFF0E6; --orange-dark: #D96210; --white: #FFFFFF; --shadow: 0 2px 16px rgba(244,123,32,0.18); }
+    body { font-family: 'DM Sans', sans-serif; background: #fafafa; overflow-x: hidden; }
+    nav { position: sticky; top: 0; z-index: 200; background: var(--white); border-bottom: 2px solid var(--orange); box-shadow: var(--shadow); height: 64px; display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: center; padding: 0 24px; gap: 12px; }
+    .nav-left { display: flex; align-items: center; }
+    .home-btn { display: flex; align-items: center; gap: 8px; text-decoration: none; background: var(--orange); color: var(--white); font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 1.5px; padding: 8px 18px; border-radius: 8px; transition: background 0.2s, transform 0.15s; border: none; cursor: pointer; }
+    .home-btn:hover { background: var(--orange-dark); transform: translateY(-1px); }
+    .nav-center { display: flex; justify-content: center; }
+    .search-wrap { position: relative; width: 100%; max-width: 340px; }
+    .search-wrap input { width: 100%; height: 40px; border: 2px solid var(--orange); border-radius: 50px; padding: 0 44px 0 18px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: #333; background: var(--orange-light); outline: none; transition: box-shadow 0.2s, background 0.2s; }
+    .search-wrap input::placeholder { color: #aaa; }
+    .search-wrap input:focus { background: var(--white); box-shadow: 0 0 0 3px rgba(244,123,32,0.25); }
+    .search-wrap button { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: var(--orange); border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s; }
+    .search-wrap button:hover { background: var(--orange-dark); }
+    .nav-right { display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
+    .sort-label { font-size: 0.8rem; font-weight: 600; color: var(--orange); text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
+    .sort-select { appearance: none; -webkit-appearance: none; height: 40px; padding: 0 36px 0 14px; border: 2px solid var(--orange); border-radius: 8px; background: var(--orange-light) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23F47B20' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 12px center; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; color: #444; cursor: pointer; outline: none; transition: box-shadow 0.2s; }
+    .sort-select:focus { box-shadow: 0 0 0 3px rgba(244,123,32,0.25); background-color: var(--white); }
+    .screen { display: none; }
+    .screen.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+    .page-header { padding: 40px 32px 16px; display: flex; align-items: baseline; gap: 14px; }
+    .page-header h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2rem,5vw,3.5rem); color: var(--orange); letter-spacing: 3px; line-height: 1; }
+    .count-badge { background: var(--orange-light); color: var(--orange-dark); font-size: 0.78rem; font-weight: 600; padding: 3px 10px; border-radius: 50px; border: 1px solid var(--orange); display: none; }
+    .tournaments-section { padding: 8px 32px 60px; }
+    .tournaments-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 22px; }
+    .card { background: var(--white); border-radius: 14px; border: 1.5px solid #f0e0d0; box-shadow: 0 2px 12px rgba(244,123,32,0.08); overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; animation: fadeUp 0.4s ease both; }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(244,123,32,0.18); }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+    .card-banner { height: 6px; background: linear-gradient(90deg, var(--orange), #fdb97d); }
+    .card-body { padding: 20px 20px 16px; }
+    .card-sport-tag { display: inline-block; background: var(--orange-light); color: var(--orange-dark); font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 3px 10px; border-radius: 50px; margin-bottom: 10px; }
+    .card-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.35rem; letter-spacing: 1.5px; color: #222; margin-bottom: 6px; line-height: 1.2; }
+    .card-meta { display: flex; flex-direction: column; gap: 5px; margin-top: 12px; }
+    .card-meta-row { display: flex; align-items: center; gap: 7px; font-size: 0.82rem; color: #777; }
+    .card-meta-row svg { flex-shrink: 0; color: var(--orange); }
+    .card-footer { padding: 12px 20px; border-top: 1px solid #f5ece4; display: flex; justify-content: space-between; align-items: center; }
+    .card-slots { font-size: 0.8rem; color: #999; }
+    .card-slots strong { color: #444; }
+    .card-slots .full-tag { color: #e05555; font-weight: 700; }
+    .card-join-btn { background: var(--orange); color: var(--white); border: none; border-radius: 7px; padding: 7px 16px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .card-join-btn:hover { background: var(--orange-dark); }
+    .skel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 22px; }
+    .skel-card { background: var(--white); border-radius: 14px; border: 1.5px solid #f0e0d0; overflow: hidden; }
+    .skel-card-banner { height: 6px; background: #f5ece4; }
+    .skel-card-body { padding: 20px; }
+    .skel-card-footer { padding: 12px 20px; border-top: 1px solid #f5ece4; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .skel { background: linear-gradient(90deg, #f5ece4 25%, #fde8d4 50%, #f5ece4 75%); background-size: 400% 100%; animation: shimmer 1.6s ease-in-out infinite; border-radius: 6px; }
+    @keyframes shimmer { 0% { background-position: 100% 50%; } 100% { background-position: -100% 50%; } }
+    .skel-tag { height: 20px; width: 72px; margin-bottom: 14px; border-radius: 50px; }
+    .skel-title { height: 24px; width: 85%; margin-bottom: 6px; }
+    .skel-title2 { height: 24px; width: 55%; margin-bottom: 16px; }
+    .skel-line { height: 13px; width: 100%; margin-bottom: 7px; border-radius: 4px; }
+    .skel-line.med { width: 75%; }
+    .skel-line.short { width: 50%; margin-bottom: 0; }
+    .skel-pill { height: 28px; width: 90px; border-radius: 50px; }
+    .skel-btn { height: 32px; width: 88px; border-radius: 7px; }
+    .empty-state, .error-state { text-align:center; padding:80px 20px; }
+    .state-icon { width:72px; height:72px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:20px; }
+    .state-icon.orange { background: var(--orange-light); color: var(--orange); }
+    .state-icon.red { background: #fff0f0; color: #e05555; }
+    .empty-state h2, .error-state h2 { font-family:'Bebas Neue',sans-serif; font-size:1.6rem; letter-spacing:2px; color:#bbb; margin-bottom:8px; }
+    .empty-state p, .error-state p { color:#bbb; font-size:0.9rem; line-height:1.7; margin-bottom:16px; }
+    .error-state code { background:#f5f5f5; padding:2px 8px; border-radius:4px; font-size:0.82rem; color:#e05555; }
+    .retry-btn { background: var(--orange); color: var(--white); border: none; border-radius: 8px; padding: 10px 24px; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: background 0.2s; }
+    .retry-btn:hover { background: var(--orange-dark); }
+    .detail-back-bar { padding: 20px 32px 0; }
+    .back-btn { display: inline-flex; align-items: center; gap: 8px; background: none; border: 2px solid var(--orange); color: var(--orange); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; padding: 7px 16px; border-radius: 8px; cursor: pointer; transition: background 0.2s, color 0.2s; }
+    .back-btn:hover { background: var(--orange); color: var(--white); }
+    .detail-hero { position: relative; width: 100%; height: 340px; overflow: hidden; margin-top: 20px; background: #f5ece4; }
+    .detail-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .detail-hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 55%, transparent 100%); }
+    .detail-hero-title { position: absolute; bottom: 28px; left: 36px; right: 36px; }
+    .sport-badge { display: inline-block; background: var(--orange); color: var(--white); font-size: 0.72rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 12px; border-radius: 50px; margin-bottom: 10px; }
+    .detail-hero-title h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2rem,5vw,3.2rem); color: var(--white); letter-spacing: 2px; line-height: 1.1; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+    .detail-hero.is-loading { background: linear-gradient(90deg, #f5ece4 25%, #fde8d4 50%, #f5ece4 75%); background-size: 400% 100%; animation: shimmer 1.6s ease-in-out infinite; }
+    .detail-body { max-width: 920px; margin: 0 auto; padding: 36px 32px 80px; display: grid; grid-template-columns: 1fr 300px; gap: 36px; }
+    .detail-info { display: flex; flex-direction: column; gap: 30px; }
+    .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.05rem; letter-spacing: 2px; color: var(--orange); border-bottom: 2px solid var(--orange-light); padding-bottom: 8px; margin-bottom: 16px; }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .stat-box { background: var(--white); border: 1.5px solid #f0e0d0; border-radius: 12px; padding: 16px 18px; }
+    .stat-lbl { font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #c0b0a0; margin-bottom: 5px; }
+    .stat-val { font-size: 1rem; font-weight: 600; color: #222; }
+    .stat-val.hl { color: var(--orange); }
+    .stat-box.is-loading .stat-lbl, .stat-box.is-loading .stat-val { visibility: hidden; }
+    .stat-box.is-loading { background: linear-gradient(90deg, #f5ece4 25%, #fde8d4 50%, #f5ece4 75%); background-size: 400% 100%; animation: shimmer 1.6s ease-in-out infinite; }
+    .detail-desc { font-size: 0.93rem; color: #555; line-height: 1.78; }
+    .slots-lbl { display: flex; justify-content: space-between; font-size: 0.8rem; color: #888; margin-bottom: 8px; }
+    .slots-track { height: 9px; background: #f0e0d0; border-radius: 50px; overflow: hidden; }
+    .slots-fill { height: 100%; background: linear-gradient(90deg, var(--orange), #fdb97d); border-radius: 50px; transition: width 0.7s cubic-bezier(.4,0,.2,1); }
+    .org-card { background: var(--white); border: 1.5px solid #f0e0d0; border-radius: 14px; padding: 18px 20px; display: flex; align-items: center; gap: 16px; }
+    .org-avatar { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, var(--orange), #fdb97d); display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; color: var(--white); flex-shrink: 0; }
+    .org-name { font-weight: 600; font-size: 0.95rem; color: #222; }
+    .org-role { font-size: 0.78rem; color: #aaa; margin-top: 2px; }
+    .detail-sidebar { display: flex; flex-direction: column; gap: 18px; }
+    .sidebar-card { background: var(--white); border: 1.5px solid #f0e0d0; border-radius: 14px; padding: 22px; }
+    .prizebox { background: linear-gradient(135deg, var(--orange) 0%, #fdb97d 100%); border-radius: 14px; padding: 26px 20px; text-align: center; color: var(--white); }
+    .prizebox.is-loading { background: linear-gradient(90deg, #f5ece4 25%, #fde8d4 50%, #f5ece4 75%); background-size: 400% 100%; animation: shimmer 1.6s ease-in-out infinite; min-height: 110px; }
+    .prize-lbl { font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; opacity: 0.85; margin-bottom: 6px; }
+    .prize-amt { font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; letter-spacing: 2px; line-height: 1; }
+    .prize-sub { font-size: 0.78rem; opacity: 0.8; margin-top: 5px; }
+    .venue-list { display: flex; flex-direction: column; gap: 14px; }
+    .venue-item { display: flex; align-items: flex-start; gap: 11px; }
+    .venue-item svg { flex-shrink: 0; margin-top: 2px; color: var(--orange); }
+    .v-lbl { font-size: 0.69rem; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: #c0b0a0; margin-bottom: 2px; }
+    .v-val { font-size: 0.87rem; color: #444; }
+    .join-btn { width: 100%; padding: 15px; background: var(--orange); color: var(--white); border: none; border-radius: 10px; font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: 2px; cursor: pointer; transition: background 0.2s, transform 0.15s; box-shadow: 0 4px 16px rgba(244,123,32,0.35); }
+    .join-btn:hover { background: var(--orange-dark); transform: translateY(-2px); }
+    .join-btn:disabled { background: #ddd; color: #aaa; box-shadow: none; cursor: not-allowed; transform: none; }
+    .join-btn.joined { background: #3cb97a; box-shadow: 0 4px 16px rgba(60,185,122,0.35); }
+    .join-btn.is-loading { background: #f5ece4; color: transparent; box-shadow: none; cursor: default; animation: shimmer 1.6s ease-in-out infinite; background-size: 400% 100%; }
+    .full-note { text-align: center; font-size: 0.75rem; color: #bbb; margin-top: -6px; min-height: 18px; }
+    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px); background: #222; color: #fff; padding: 12px 24px; border-radius: 50px; font-size: 0.88rem; font-weight: 600; opacity: 0; transition: opacity 0.3s, transform 0.3s; z-index: 9999; pointer-events: none; white-space: nowrap; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    @media (max-width: 700px) {
+      nav { grid-template-columns: auto 1fr auto; gap: 8px; padding: 0 12px; }
+      .sort-label { display: none; }
+      .home-btn span { display: none; }
+      .home-btn { padding: 8px 12px; }
+      .page-header, .tournaments-section, .detail-back-bar { padding-left: 16px; padding-right: 16px; }
+      .detail-body { grid-template-columns: 1fr; padding: 20px 16px 60px; }
+      .detail-hero { height: 230px; }
+      .detail-hero-title { left: 16px; bottom: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-left">
+      <button class="home-btn" onclick="window.location.href='index.html'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+        <span>Home</span>
+      </button>
+    </div>
+    <div class="nav-center">
+      <div class="search-wrap">
+        <input type="text" id="searchInput" placeholder="Search tournaments..."/>
+        <button aria-label="Search" onclick="applyFilters()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="nav-right">
+      <span class="sort-label">Sort</span>
+      <select class="sort-select" id="sortSelect" onchange="applyFilters()">
+        <option value="">-- Select --</option>
+        <option value="az">A to Z</option>
+        <option value="za">Z to A</option>
+        <option value="newest">Newest</option>
+        <option value="slots">Most Slots</option>
+      </select>
+    </div>
+  </nav>
+
+  <div id="listScreen" class="screen active">
+    <div class="page-header">
+      <h1>Endurance Sports</h1>
+      <span class="count-badge" id="countBadge"></span>
+    </div>
+    <div class="tournaments-section">
+      <div id="tournamentContainer"></div>
+    </div>
+  </div>
+
+  <div id="detailScreen" class="screen">
+    <div class="detail-back-bar">
+      <button class="back-btn" onclick="goBack()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to Tournaments
+      </button>
+    </div>
+    <div class="detail-hero" id="dHero">
+      <img id="dImg" src="" alt="Venue photo" style="display:none"/>
+      <div class="detail-hero-overlay" id="dOverlay" style="display:none"></div>
+      <div class="detail-hero-title" id="dHeroTitle" style="display:none">
+        <span class="sport-badge" id="dSport"></span>
+        <h1 id="dName"></h1>
+      </div>
+    </div>
+    <div class="detail-body">
+      <div class="detail-info">
+        <div>
+          <div class="section-title">Overview</div>
+          <div class="stats-grid">
+            <div class="stat-box is-loading" id="sboxDate"><div class="stat-lbl">Date</div><div class="stat-val" id="dDate"></div></div>
+            <div class="stat-box is-loading" id="sboxTime"><div class="stat-lbl">Start Time</div><div class="stat-val" id="dTime"></div></div>
+            <div class="stat-box is-loading" id="sboxFormat"><div class="stat-lbl">Format</div><div class="stat-val" id="dFormat"></div></div>
+            <div class="stat-box is-loading" id="sboxFee"><div class="stat-lbl">Entry Fee</div><div class="stat-val hl" id="dFee"></div></div>
+          </div>
+        </div>
+        <div>
+          <div class="section-title">About this Tournament</div>
+          <div id="descSkeleton">
+            <div class="skel" style="height:13px;width:100%;margin-bottom:8px;border-radius:4px;"></div>
+            <div class="skel" style="height:13px;width:95%;margin-bottom:8px;border-radius:4px;"></div>
+            <div class="skel" style="height:13px;width:88%;margin-bottom:8px;border-radius:4px;"></div>
+            <div class="skel" style="height:13px;width:70%;border-radius:4px;"></div>
+          </div>
+          <p class="detail-desc" id="dDesc" style="display:none"></p>
+        </div>
+        <div>
+          <div class="section-title">Registration Slots</div>
+          <div class="slots-lbl">
+            <span id="dSlotsTaken"><div class="skel" style="height:13px;width:100px;border-radius:4px;"></div></span>
+            <span id="dSlotsTotal"><div class="skel" style="height:13px;width:80px;border-radius:4px;"></div></span>
+          </div>
+          <div class="slots-track"><div class="slots-fill" id="dSlotsBar" style="width:0%"></div></div>
+        </div>
+        <div>
+          <div class="section-title">Organizer</div>
+          <div class="org-card" id="orgCard">
+            <div class="skel" style="width:50px;height:50px;border-radius:50%;flex-shrink:0;"></div>
+            <div style="flex:1;">
+              <div class="skel" style="height:15px;width:55%;margin-bottom:7px;border-radius:5px;"></div>
+              <div class="skel" style="height:12px;width:38%;border-radius:5px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-sidebar">
+        <div class="prizebox is-loading" id="prizeBox">
+          <div class="prize-lbl" style="display:none">Prize Pool</div>
+          <div class="prize-amt" id="dPrize" style="display:none"></div>
+          <div class="prize-sub" style="display:none">Total winnings</div>
+        </div>
+        <div class="sidebar-card">
+          <div class="section-title">Venue Details</div>
+          <div class="venue-list" id="venueList">
+            <div style="display:flex;gap:11px;align-items:center;">
+              <div class="skel" style="width:15px;height:15px;border-radius:3px;flex-shrink:0;"></div>
+              <div style="flex:1;"><div class="skel" style="height:11px;width:40%;margin-bottom:5px;border-radius:3px;"></div><div class="skel" style="height:13px;width:80%;border-radius:3px;"></div></div>
+            </div>
+            <div style="display:flex;gap:11px;align-items:center;">
+              <div class="skel" style="width:15px;height:15px;border-radius:3px;flex-shrink:0;"></div>
+              <div style="flex:1;"><div class="skel" style="height:11px;width:30%;margin-bottom:5px;border-radius:3px;"></div><div class="skel" style="height:13px;width:65%;border-radius:3px;"></div></div>
+            </div>
+            <div style="display:flex;gap:11px;align-items:center;">
+              <div class="skel" style="width:15px;height:15px;border-radius:3px;flex-shrink:0;"></div>
+              <div style="flex:1;"><div class="skel" style="height:11px;width:35%;margin-bottom:5px;border-radius:3px;"></div><div class="skel" style="height:13px;width:50%;border-radius:3px;"></div></div>
+            </div>
+          </div>
+        </div>
+        <button class="join-btn is-loading" id="joinBtn" disabled>CONFIRM REGISTRATION</button>
+        <p class="full-note" id="fullNote"></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    var API = {
+      tournaments: 'api/tournaments.php?category=endurance',
+      tournament: 'api/tournament.php',
+      register: 'api/register.php'
+    };
+    var current = null;
+    var searchTimeout = null;
+
+    function showSkeleton() {
+      document.getElementById('countBadge').style.display = 'none';
+      var grid = document.createElement('div');
+      grid.className = 'skel-grid';
+      var html = '';
+      for (var i = 0; i < 6; i++) {
+        html += '<div class="skel-card">';
+        html += '<div class="skel-card-banner skel"></div>';
+        html += '<div class="skel-card-body">';
+        html += '<div class="skel skel-tag"></div>';
+        html += '<div class="skel skel-title"></div>';
+        html += '<div class="skel skel-title2"></div>';
+        html += '<div class="skel skel-line med"></div>';
+        html += '<div class="skel skel-line short" style="margin-top:6px"></div>';
+        html += '</div>';
+        html += '<div class="skel-card-footer">';
+        html += '<div class="skel skel-pill"></div>';
+        html += '<div class="skel skel-btn"></div>';
+        html += '</div></div>';
+      }
+      grid.innerHTML = html;
+      document.getElementById('tournamentContainer').innerHTML = '';
+      document.getElementById('tournamentContainer').appendChild(grid);
+    }
+
+    function fetchTournaments(search, sort) {
+      if (!search) search = '';
+      if (!sort) sort = '';
+      showSkeleton();
+      var url = API.tournaments;
+      if (search) url += '&search=' + encodeURIComponent(search);
+      if (sort) url += '&sort=' + encodeURIComponent(sort);
+      fetch(url)
+        .then(function(res) {
+          if (!res.ok) throw new Error('Server returned ' + res.status);
+          return res.json();
+        })
+        .then(function(json) {
+          renderList(json.data || []);
+        })
+        .catch(function(err) {
+          console.error(err);
+          showFetchError();
+        });
+    }
+
+    function renderList(list) {
+      var c = document.getElementById('tournamentContainer');
+      var b = document.getElementById('countBadge');
+      if (!list.length) {
+        b.style.display = 'none';
+        c.innerHTML = '<div class="empty-state"><div class="state-icon orange"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div><h2>No Tournaments Found</h2><p>Try a different keyword or clear the filter.</p></div>';
+        return;
+      }
+      b.textContent = list.length + ' found';
+      b.style.display = 'inline-block';
+      var grid = document.createElement('div');
+      grid.className = 'tournaments-grid';
+      for (var i = 0; i < list.length; i++) {
+        var t = list[i];
+        var left = t.slots_total - t.slots_taken;
+        var isFull = left <= 0;
+        var ds = new Date(t.date).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+        var el = document.createElement('div');
+        el.className = 'card';
+        el.style.animationDelay = (i * 60) + 'ms';
+        var slotsHtml = isFull ? '<span class="full-tag">FULL</span>' : '<strong>' + left + '</strong> slots left of ' + t.slots_total;
+        el.innerHTML = '<div class="card-banner"></div><div class="card-body"><span class="card-sport-tag">' + esc(t.sport) + '</span><div class="card-title">' + esc(t.name) + '</div><div class="card-meta"><div class="card-meta-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>' + esc(t.location) + '</div><div class="card-meta-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>' + ds + ' ' + esc(t.time) + '</div></div></div><div class="card-footer"><div class="card-slots">' + slotsHtml + '</div><button class="card-join-btn" onclick="openDetail(' + t.id + ')">View and Join</button></div>';
+        grid.appendChild(el);
+      }
+      c.innerHTML = '';
+      c.appendChild(grid);
+    }
+
+    function openDetail(id) {
+      showScreen('detailScreen');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setDetailSkeleton();
+      fetch(API.tournament + '?id=' + id)
+        .then(function(res) {
+          if (!res.ok) throw new Error('Server returned ' + res.status);
+          return res.json();
+        })
+        .then(function(json) {
+          current = json.data;
+          populateDetail(current);
+        })
+        .catch(function(err) {
+          console.error(err);
+          alert('Failed to load tournament details. Please try again.');
+          goBack();
+        });
+    }
+
+    function setDetailSkeleton() {
+      var hero = document.getElementById('dHero');
+      hero.classList.add('is-loading');
+      document.getElementById('dImg').style.display = 'none';
+      document.getElementById('dOverlay').style.display = 'none';
+      document.getElementById('dHeroTitle').style.display = 'none';
+      var boxes = ['sboxDate','sboxTime','sboxFormat','sboxFee'];
+      for (var i = 0; i < boxes.length; i++) {
+        document.getElementById(boxes[i]).classList.add('is-loading');
+      }
+      document.getElementById('descSkeleton').style.display = '';
+      document.getElementById('dDesc').style.display = 'none';
+      document.getElementById('dSlotsTaken').innerHTML = '<div class="skel" style="height:13px;width:100px;border-radius:4px;"></div>';
+      document.getElementById('dSlotsTotal').innerHTML = '<div class="skel" style="height:13px;width:80px;border-radius:4px;"></div>';
+      document.getElementById('dSlotsBar').style.width = '0%';
+      document.getElementById('orgCard').innerHTML = '<div class="skel" style="width:50px;height:50px;border-radius:50%;flex-shrink:0;"></div><div style="flex:1;"><div class="skel" style="height:15px;width:55%;margin-bottom:7px;border-radius:5px;"></div><div class="skel" style="height:12px;width:38%;border-radius:5px;"></div></div>';
+      var pb = document.getElementById('prizeBox');
+      pb.classList.add('is-loading');
+      var pbChildren = pb.querySelectorAll('div, p');
+      for (var i = 0; i < pbChildren.length; i++) { pbChildren[i].style.display = 'none'; }
+      document.getElementById('venueList').innerHTML = '<div style="display:flex;gap:11px;align-items:center;"><div class="skel" style="width:15px;height:15px;border-radius:3px;flex-shrink:0;"></div><div style="flex:1;"><div class="skel" style="height:11px;width:40%;margin-bottom:5px;border-radius:3px;"></div><div class="skel" style="height:13px;width:80%;border-radius:3px;"></div></div></div><div style="display:flex;gap:11px;align-items:center;"><div class="skel" style="width:15px;height:15px;border-radius:3px;flex-shrink:0;"></div><div style="flex:1;"><div class="skel" style="height:11px;width:30%;margin-bottom:5px;border-radius:3px;"></div><div class="skel" style="height:13px;width:65%;border-radius:3px;"></div></div></div><div style="display:flex;gap:11px;align-items:center;"><div class="skel" style="width:15px;height:15px;border-radius:3px;flex-shrink:0;"></div><div style="flex:1;"><div class="skel" style="height:11px;width:35%;margin-bottom:5px;border-radius:3px;"></div><div class="skel" style="height:13px;width:50%;border-radius:3px;"></div></div></div>';
+      var btn = document.getElementById('joinBtn');
+      btn.className = 'join-btn is-loading';
+      btn.disabled = true;
+      btn.textContent = 'CONFIRM REGISTRATION';
+      document.getElementById('fullNote').textContent = '';
+    }
+
+    function populateDetail(t) {
+      var ds = new Date(t.date).toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
+      var pct = Math.round((t.slots_taken / t.slots_total) * 100);
+      var full = t.slots_taken >= t.slots_total;
+      var btn = document.getElementById('joinBtn');
+      var hero = document.getElementById('dHero');
+      hero.classList.remove('is-loading');
+      if (t.image_url) {
+        var img = document.getElementById('dImg');
+        img.src = t.image_url;
+        img.style.display = 'block';
+      } else {
+        hero.style.background = 'linear-gradient(135deg, #F47B20 0%, #fdb97d 100%)';
+      }
+      document.getElementById('dOverlay').style.display = '';
+      document.getElementById('dHeroTitle').style.display = '';
+      document.getElementById('dSport').textContent = t.sport;
+      document.getElementById('dName').textContent = t.name;
+      var boxes = {
+        sboxDate:   { lbl: 'Date',       val: ds,          cls: '' },
+        sboxTime:   { lbl: 'Start Time', val: t.time,      cls: '' },
+        sboxFormat: { lbl: 'Format',     val: t.format,    cls: '' },
+        sboxFee:    { lbl: 'Entry Fee',  val: t.entry_fee, cls: 'hl' }
+      };
+      var ids = Object.keys(boxes);
+      for (var i = 0; i < ids.length; i++) {
+        var id = ids[i];
+        var box = document.getElementById(id);
+        box.classList.remove('is-loading');
+        box.innerHTML = '<div class="stat-lbl">' + boxes[id].lbl + '</div><div class="stat-val ' + boxes[id].cls + '">' + esc(boxes[id].val) + '</div>';
+      }
+      document.getElementById('descSkeleton').style.display = 'none';
+      var desc = document.getElementById('dDesc');
+      desc.textContent = t.description;
+      desc.style.display = '';
+      document.getElementById('dSlotsTaken').textContent = t.slots_taken + ' registered';
+      document.getElementById('dSlotsTotal').textContent = t.slots_total + ' total slots';
+      setTimeout(function() { document.getElementById('dSlotsBar').style.width = pct + '%'; }, 150);
+      document.getElementById('orgCard').innerHTML = '<div class="org-avatar">' + esc(t.organizer.charAt(0).toUpperCase()) + '</div><div><div class="org-name">' + esc(t.organizer) + '</div><div class="org-role">Tournament Organizer</div></div>';
+      var pb = document.getElementById('prizeBox');
+      pb.classList.remove('is-loading');
+      pb.innerHTML = '<div class="prize-lbl">Prize Pool</div><div class="prize-amt">' + esc(t.prize) + '</div><div class="prize-sub">Total winnings</div>';
+      document.getElementById('venueList').innerHTML = '<div class="venue-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><div><div class="v-lbl">Location</div><div class="v-val">' + esc(t.location) + '</div></div></div><div class="venue-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><div><div class="v-lbl">Date</div><div class="v-val">' + esc(ds) + '</div></div></div><div class="venue-item"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><div><div class="v-lbl">Start Time</div><div class="v-val">' + esc(t.time) + '</div></div></div>';
+      btn.classList.remove('is-loading');
+      btn.disabled = full;
+      btn.className = 'join-btn';
+      btn.textContent = 'CONFIRM REGISTRATION';
+      btn.onclick = function() { window.location.href = 'register.html?id=' + t.id; };
+      document.getElementById('fullNote').textContent = full ? 'This tournament is already full.' : '';
+    }
+
+    function showFetchError() {
+      var url = window.location.href;
+      document.getElementById('tournamentContainer').innerHTML = '<div class="error-state"><div class="state-icon red"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><h2>Could Not Connect</h2><p>Make sure XAMPP Apache and MySQL are running and open this at:<br><code>' + url + '</code></p><button class="retry-btn" onclick="fetchTournaments()">Try Again</button></div>';
+    }
+
+    function showToast(msg) {
+      var t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(function() { t.classList.remove('show'); }, 3000);
+    }
+
+    function esc(str) {
+      return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function showScreen(id) {
+      var screens = document.querySelectorAll('.screen');
+      for (var i = 0; i < screens.length; i++) { screens[i].classList.remove('active'); }
+      document.getElementById(id).classList.add('active');
+    }
+
+    function goBack() {
+      showScreen('listScreen');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function applyFilters() {
+      var q = document.getElementById('searchInput').value.trim();
+      var s = document.getElementById('sortSelect').value;
+      fetchTournaments(q, s);
+    }
+
+    document.getElementById('searchInput').addEventListener('input', function() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(applyFilters, 350);
+    });
+
+    fetchTournaments();
+  </script>
+</body>
+</html>

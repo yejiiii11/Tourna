@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ball Sports</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --orange: #F47B20; --orange-light: #FFF0E6; --orange-dark: #D96210; --white: #FFFFFF; --shadow: 0 2px 16px rgba(244,123,32,0.18); }
+    body { font-family: 'DM Sans', sans-serif; background: #fafafa; overflow-x: hidden; }
+
+    nav { position: sticky; top: 0; z-index: 200; background: var(--white); border-bottom: 2px solid var(--orange); box-shadow: var(--shadow); height: 64px; display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: center; padding: 0 24px; gap: 12px; }
+    .nav-left { display: flex; align-items: center; }
+    .home-btn { display: flex; align-items: center; gap: 8px; text-decoration: none; background: var(--orange); color: var(--white); font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 1.5px; padding: 8px 18px; border-radius: 8px; transition: background 0.2s, transform 0.15s; border: none; cursor: pointer; }
+    .home-btn:hover { background: var(--orange-dark); transform: translateY(-1px); }
+    .nav-center { display: flex; justify-content: center; }
+    .search-wrap { position: relative; width: 100%; max-width: 340px; }
+    .search-wrap input { width: 100%; height: 40px; border: 2px solid var(--orange); border-radius: 50px; padding: 0 44px 0 18px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: #333; background: var(--orange-light); outline: none; transition: box-shadow 0.2s, background 0.2s; }
+    .search-wrap input::placeholder { color: #aaa; }
+    .search-wrap input:focus { background: var(--white); box-shadow: 0 0 0 3px rgba(244,123,32,0.25); }
+    .search-wrap button { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: var(--orange); border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s; }
+    .search-wrap button:hover { background: var(--orange-dark); }
+    .nav-right { display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
+    .sort-label { font-size: 0.8rem; font-weight: 600; color: var(--orange); text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
+    .sort-select { appearance: none; -webkit-appearance: none; height: 40px; padding: 0 36px 0 14px; border: 2px solid var(--orange); border-radius: 8px; background: var(--orange-light) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23F47B20' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 12px center; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; color: #444; cursor: pointer; outline: none; transition: box-shadow 0.2s; }
+    .sort-select:focus { box-shadow: 0 0 0 3px rgba(244,123,32,0.25); background-color: var(--white); }
+
+    .screen { display: none; }
+    .screen.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+    .page-header { padding: 40px 32px 16px; display: flex; align-items: baseline; gap: 14px; }
+    .page-header h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2rem,5vw,3.5rem); color: var(--orange); letter-spacing: 3px; line-height: 1; }
+    .count-badge { background: var(--orange-light); color: var(--orange-dark); font-size: 0.78rem; font-weight: 600; padding: 3px 10px; border-radius: 50px; border: 1px solid var(--orange); display: none; }
+    .tournaments-section { padding: 8px 32px 60px; }
+    .tournaments-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 22px; }
+
+    .card { background: var(--white); border-radius: 14px; border: 1.5px solid #f0e0d0; box-shadow: 0 2px 12px rgba(244,123,32,0.08); overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; animation: fadeUp 0.4s ease both; }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(244,123,32,0.18); }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+    .card-banner { height: 8px; background: linear-gradient(90deg, var(--orange), #fdb97d); }
+    .card-body { padding: 20px 20px 16px; }
+    .card-sport-tag { display: inline-block; background: var(--orange-light); color: var(--orange-dark); font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 3px 10px; border-radius: 50px; margin-bottom: 10px; }
+    .card-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.35rem; letter-spacing: 1.5px; color: #222; margin-bottom: 6px; }
+    .card-meta { display: flex; flex-direction: column; gap: 5px; margin-top: 12px; }
+    .card-meta-row { display: flex; align-items: center; gap: 7px; font-size: 0.82rem; color: #777; }
+    .card-meta-row svg { flex-shrink: 0; color: var(--orange); }
+    .card-footer { padding: 12px 20px; border-top: 1px solid #f5ece4; display: flex; justify-content: space-between; align-items: center; }
+    .card-slots { font-size: 0.8rem; color: #999; }
+    .card-slots strong { color: #444; }
+    .card-join-btn { background: var(--orange); color: var(--white); border: none; border-radius: 7px; padding: 7px 16px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .card-join-btn:hover { background: var(--orange-dark); }
+
+    .empty-state { text-align:center; padding:80px 20px; }
+    .empty-icon { width:72px; height:72px; background:var(--orange-light); border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:20px; color:var(--orange); }
+    .empty-state h2 { font-family:'Bebas Neue',sans-serif; font-size:1.6rem; letter-spacing:2px; color:#bbb; margin-bottom:8px; }
+    .empty-state p { color:#bbb; font-size:0.9rem; }
+
+    .detail-back-bar { padding: 20px 32px 0; display: flex; align-items: center; gap: 12px; }
+    .back-btn { display: inline-flex; align-items: center; gap: 8px; background: none; border: 2px solid var(--orange); color: var(--orange); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; padding: 7px 16px; border-radius: 8px; cursor: pointer; transition: background 0.2s, color 0.2s; }
+    .back-btn:hover { background: var(--orange); color: var(--white); }
+
+    .detail-hero { position: relative; width: 100%; height: 340px; overflow: hidden; margin-top: 20px; }
+    .detail-hero-bg { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .detail-hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 55%, transparent 100%); }
+    .detail-hero-title { position: absolute; bottom: 28px; left: 36px; right: 36px; }
+    .sport-badge { display: inline-block; background: var(--orange); color: var(--white); font-size: 0.72rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 12px; border-radius: 50px; margin-bottom: 10px; }
+    .detail-hero-title h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2rem,5vw,3.2rem); color: var(--white); letter-spacing: 2px; line-height: 1.1; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+
+    /* Hero placeholder when no image */
+    .hero-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+
+    .detail-body { max-width: 920px; margin: 0 auto; padding: 36px 32px 80px; display: grid; grid-template-columns: 1fr 300px; gap: 36px; }
+    .detail-info { display: flex; flex-direction: column; gap: 30px; }
+    .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.05rem; letter-spacing: 2px; color: var(--orange); border-bottom: 2px solid var(--orange-light); padding-bottom: 8px; margin-bottom: 16px; }
+
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .stat-box { background: var(--white); border: 1.5px solid #f0e0d0; border-radius: 12px; padding: 16px 18px; }
+    .stat-lbl { font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #c0b0a0; margin-bottom: 5px; }
+    .stat-val { font-size: 1rem; font-weight: 600; color: #222; }
+    .stat-val.hl { color: var(--orange); }
+
+    .detail-desc { font-size: 0.93rem; color: #555; line-height: 1.78; }
+
+    .slots-lbl { display: flex; justify-content: space-between; font-size: 0.8rem; color: #888; margin-bottom: 8px; }
+    .slots-track { height: 9px; background: #f0e0d0; border-radius: 50px; overflow: hidden; }
+    .slots-fill { height: 100%; background: linear-gradient(90deg, var(--orange), #fdb97d); border-radius: 50px; transition: width 0.7s cubic-bezier(.4,0,.2,1); }
+
+    .org-card { background: var(--white); border: 1.5px solid #f0e0d0; border-radius: 14px; padding: 18px 20px; display: flex; align-items: center; gap: 16px; }
+    .org-avatar { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, var(--orange), #fdb97d); display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; color: var(--white); flex-shrink: 0; }
+    .org-name { font-weight: 600; font-size: 0.95rem; color: #222; }
+    .org-role { font-size: 0.78rem; color: #aaa; margin-top: 2px; }
+
+    .detail-sidebar { display: flex; flex-direction: column; gap: 18px; }
+    .sidebar-card { background: var(--white); border: 1.5px solid #f0e0d0; border-radius: 14px; padding: 22px; }
+
+    .prizebox { background: linear-gradient(135deg, var(--orange) 0%, #fdb97d 100%); border-radius: 14px; padding: 26px 20px; text-align: center; color: var(--white); }
+    .prize-lbl { font-size: 0.75rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; opacity: 0.85; margin-bottom: 6px; }
+    .prize-amt { font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; letter-spacing: 2px; line-height: 1; }
+    .prize-sub { font-size: 0.78rem; opacity: 0.8; margin-top: 5px; }
+
+    .venue-list { display: flex; flex-direction: column; gap: 14px; }
+    .venue-item { display: flex; align-items: flex-start; gap: 11px; }
+    .venue-item svg { flex-shrink: 0; margin-top: 2px; color: var(--orange); }
+    .v-lbl { font-size: 0.69rem; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: #c0b0a0; margin-bottom: 2px; }
+    .v-val { font-size: 0.87rem; color: #444; }
+
+    .join-btn { width: 100%; padding: 15px; background: var(--orange); color: var(--white); border: none; border-radius: 10px; font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: 2px; cursor: pointer; transition: background 0.2s, transform 0.15s; box-shadow: 0 4px 16px rgba(244,123,32,0.35); }
+    .join-btn:hover { background: var(--orange-dark); transform: translateY(-2px); }
+    .join-btn:disabled { background: #ddd; color: #aaa; box-shadow: none; cursor: not-allowed; transform: none; }
+    .join-btn.joined { background: #3cb97a; box-shadow: 0 4px 16px rgba(60,185,122,0.35); }
+    .full-note { text-align: center; font-size: 0.75rem; color: #bbb; margin-top: -6px; min-height: 18px; }
+
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 999; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--white); border-radius: 16px; padding: 32px; width: 100%; max-width: 420px; margin: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+    .modal h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 2px; color: var(--orange); margin-bottom: 6px; }
+    .modal-subtitle { font-size: 0.85rem; color: #888; margin-bottom: 22px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: #999; margin-bottom: 6px; }
+    .form-group input { width: 100%; height: 42px; border: 2px solid #f0e0d0; border-radius: 8px; padding: 0 14px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: #333; outline: none; transition: border-color 0.2s; }
+    .form-group input:focus { border-color: var(--orange); }
+    .modal-error { color: #e05555; font-size: 0.8rem; margin-bottom: 10px; min-height: 18px; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 6px; }
+    .modal-cancel { flex: 1; padding: 12px; background: #f5f5f5; color: #666; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .modal-cancel:hover { background: #eee; }
+    .modal-submit { flex: 2; padding: 12px; background: var(--orange); color: var(--white); border: none; border-radius: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 1.05rem; letter-spacing: 1.5px; cursor: pointer; transition: background 0.2s; }
+    .modal-submit:hover { background: var(--orange-dark); }
+    .modal-submit:disabled { background: #ddd; color: #aaa; cursor: not-allowed; }
+
+    /* Toast notification */
+    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px); background: #222; color: #fff; padding: 12px 24px; border-radius: 50px; font-size: 0.88rem; font-weight: 600; opacity: 0; transition: opacity 0.3s, transform 0.3s; z-index: 9999; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 700px) {
+      nav { grid-template-columns: auto 1fr auto; gap: 8px; padding: 0 12px; }
+      .sort-label { display: none; }
+      .home-btn span { display: none; }
+      .home-btn { padding: 8px 12px; }
+      .page-header, .tournaments-section, .detail-back-bar { padding-left: 16px; padding-right: 16px; }
+      .detail-body { grid-template-columns: 1fr; padding: 20px 16px 60px; }
+      .detail-hero { height: 230px; }
+      .detail-hero-title { left: 16px; bottom: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-left">
+      <button class="home-btn" onclick="window.location.href='index.html'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+        <span>Home</span>
+      </button>
+    </div>
+    <div class="nav-center">
+      <div class="search-wrap">
+        <input type="text" id="searchInput" placeholder="Search tournaments…" oninput="handleSearch()"/>
+        <button aria-label="Search" onclick="handleSearch()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="nav-right">
+      <span class="sort-label">Sort</span>
+      <select class="sort-select" id="sortSelect" onchange="applyFilters()">
+        <option value="">-- Select --</option>
+        <option value="az">A → Z</option>
+        <option value="za">Z → A</option>
+        <option value="newest">Newest</option>
+        <option value="slots">Most Slots</option>
+      </select>
+    </div>
+  </nav>
+
+  <!-- LIST SCREEN -->
+  <div id="listScreen" class="screen active">
+    <div class="page-header">
+      <h1>Ball Sports</h1>
+      <span class="count-badge" id="countBadge"></span>
+    </div>
+    <div class="tournaments-section">
+      <div id="tournamentContainer"></div>
+    </div>
+  </div>
+
+  <!-- DETAIL SCREEN -->
+  <div id="detailScreen" class="screen">
+    <div class="detail-back-bar">
+      <button class="back-btn" onclick="goBack()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to Tournaments
+      </button>
+    </div>
+    <div class="detail-hero">
+      <div class="hero-placeholder detail-hero-bg" id="dHeroBg"></div>
+      <div class="detail-hero-overlay"></div>
+      <div class="detail-hero-title">
+        <span class="sport-badge" id="dSport"></span>
+        <h1 id="dName"></h1>
+      </div>
+    </div>
+    <div class="detail-body">
+      <div class="detail-info">
+        <div>
+          <div class="section-title">Overview</div>
+          <div class="stats-grid">
+            <div class="stat-box"><div class="stat-lbl">Date</div><div class="stat-val" id="dDate"></div></div>
+            <div class="stat-box"><div class="stat-lbl">Start Time</div><div class="stat-val" id="dTime"></div></div>
+            <div class="stat-box"><div class="stat-lbl">Format</div><div class="stat-val" id="dFormat"></div></div>
+            <div class="stat-box"><div class="stat-lbl">Entry Fee</div><div class="stat-val hl" id="dFee"></div></div>
+          </div>
+        </div>
+        <div>
+          <div class="section-title">About this Tournament</div>
+          <p class="detail-desc" id="dDesc"></p>
+        </div>
+        <div>
+          <div class="section-title">Registration Slots</div>
+          <div class="slots-lbl"><span id="dSlotsTaken"></span><span id="dSlotsTotal"></span></div>
+          <div class="slots-track"><div class="slots-fill" id="dSlotsBar" style="width:0%"></div></div>
+        </div>
+        <div>
+          <div class="section-title">Organizer</div>
+          <div class="org-card">
+            <div class="org-avatar" id="dOrgAvatar"></div>
+            <div>
+              <div class="org-name" id="dOrgName"></div>
+              <div class="org-role">Tournament Organizer</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-sidebar">
+        <div class="prizebox">
+          <div class="prize-lbl">🏆 Prize Pool</div>
+          <div class="prize-amt" id="dPrize"></div>
+          <div class="prize-sub">Total winnings</div>
+        </div>
+        <div class="sidebar-card">
+          <div class="section-title">Venue Details</div>
+          <div class="venue-list">
+            <div class="venue-item">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <div><div class="v-lbl">Location</div><div class="v-val" id="dLocation"></div></div>
+            </div>
+            <div class="venue-item">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <div><div class="v-lbl">Date</div><div class="v-val" id="dDate2"></div></div>
+            </div>
+            <div class="venue-item">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <div><div class="v-lbl">Start Time</div><div class="v-val" id="dTime2"></div></div>
+            </div>
+          </div>
+        </div>
+        <button class="join-btn" id="joinBtn" onclick="openRegisterModal()">CONFIRM REGISTRATION</button>
+        <p class="full-note" id="fullNote"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTRATION MODAL -->
+  <div class="modal-overlay" id="regModal">
+    <div class="modal">
+      <h2>Register Now</h2>
+      <p class="modal-subtitle" id="modalTournamentName"></p>
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="regName" placeholder="e.g. Juan dela Cruz"/>
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="regEmail" placeholder="e.g. juan@email.com"/>
+      </div>
+      <p class="modal-error" id="modalError"></p>
+      <div class="modal-actions">
+        <button class="modal-cancel" onclick="closeRegisterModal()">Cancel</button>
+        <button class="modal-submit" id="modalSubmitBtn" onclick="submitRegistration()">REGISTER</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ─────────────────────────────────────────────────────────
+    //  MOCK DATA — simulates what your PHP/MySQL would return
+    // ─────────────────────────────────────────────────────────
+    const MOCK_TOURNAMENTS = [
+      {
+        id: 1,
+        name: "Metro Basketball Invitational",
+        sport: "Basketball",
+        location: "Rizal Memorial Coliseum, Manila",
+        date: "2026-04-12",
+        time: "8:00 AM",
+        format: "Double Elimination",
+        entry_fee: "₱500 / team",
+        prize: "₱50,000",
+        description: "The Metro Basketball Invitational brings together the top 16 amateur teams from across Metro Manila for a thrilling double-elimination showdown. All games are officiated by certified PBA referees. Teams must register with a roster of 10–15 players. Trophies and medals will be awarded to the top 3 finishing teams.",
+        slots_total: 16,
+        slots_taken: 11,
+        organizer: "Metro Sports Council",
+        color: "#E87020"
+      },
+      {
+        id: 2,
+        name: "Cebu Volleyball Open",
+        sport: "Volleyball",
+        location: "Cebu City Sports Center, Cebu",
+        date: "2026-04-20",
+        time: "7:30 AM",
+        format: "Round Robin + Finals",
+        entry_fee: "₱300 / team",
+        prize: "₱25,000",
+        description: "Open to all men's and women's volleyball teams in the Visayas region. The tournament follows a round-robin group stage followed by knockout semifinals and a grand final. Each team must field 6 main players and up to 6 substitutes. Prizes include cash, trophies, and MVP awards for each division.",
+        slots_total: 24,
+        slots_taken: 18,
+        organizer: "Visayas Volleyball Federation",
+        color: "#D45F10"
+      },
+      {
+        id: 3,
+        name: "Davao Football Cup",
+        sport: "Football",
+        location: "Davao del Sur Sports Complex, Davao",
+        date: "2026-05-03",
+        time: "6:00 AM",
+        format: "Group Stage + Knockout",
+        entry_fee: "₱1,000 / team",
+        prize: "₱75,000",
+        description: "The biggest grassroots football tournament in Mindanao, featuring 20 teams competing across two group stages before a single-elimination knockout round. Players must be amateur or semi-professional. Each match is 90 minutes with extra time and penalties if needed. Official FIFA-certified match balls will be provided.",
+        slots_total: 20,
+        slots_taken: 20,
+        organizer: "Mindanao Football Association",
+        color: "#C04E00"
+      },
+      {
+        id: 4,
+        name: "Northern Luzon 3x3 Basketball",
+        sport: "3x3 Basketball",
+        location: "Baguio Athletic Bowl, Baguio City",
+        date: "2026-05-18",
+        time: "9:00 AM",
+        format: "Single Elimination",
+        entry_fee: "₱200 / team",
+        prize: "₱15,000",
+        description: "Fast-paced 3x3 basketball action at the iconic Baguio Athletic Bowl. Teams of 3 players (plus 1 sub) compete in 10-minute games to 21 points. The tournament runs in a single-elimination format from the first round. Refreshments and tournament shirts included in the registration fee.",
+        slots_total: 32,
+        slots_taken: 14,
+        organizer: "Cordillera Sports Development Office",
+        color: "#F08030"
+      },
+      {
+        id: 5,
+        name: "QC Futsal Championship",
+        sport: "Futsal",
+        location: "Quezon Memorial Circle, QC",
+        date: "2026-06-07",
+        time: "8:00 AM",
+        format: "Double Round Robin",
+        entry_fee: "₱400 / team",
+        prize: "₱30,000",
+        description: "Annual futsal championship open to corporate and barangay-level teams in Quezon City. Played on the covered courts of the QC Memorial Circle, this tournament uses FIFA futsal rules. Teams must register with 5 players minimum and up to 10 on the official roster. All matches are recorded for the official standings.",
+        slots_total: 12,
+        slots_taken: 7,
+        organizer: "QC Parks & Recreation Office",
+        color: "#E06818"
+      },
+      {
+        id: 6,
+        name: "Iloilo Beach Volleyball Fest",
+        sport: "Beach Volleyball",
+        location: "Dinagyang Grounds, Iloilo City",
+        date: "2026-06-21",
+        time: "7:00 AM",
+        format: "Pools + Knockout",
+        entry_fee: "₱250 / pair",
+        prize: "₱20,000",
+        description: "Pairs-format beach volleyball tournament held during the summer festival season in Iloilo. Open to all skill levels with separate divisions for competitive and recreational pairs. Games are played to 21 points (best of 3 sets). Free sunscreen and hydration packs for all registered players.",
+        slots_total: 28,
+        slots_taken: 28,
+        organizer: "Iloilo Beach Sports Club",
+        color: "#F47B20"
+      }
+    ];
+
+    // Local registration store (simulates DB inserts)
+    const registrations = {};
+
+    let current       = null;
+    let searchTimeout = null;
+    let allData       = [...MOCK_TOURNAMENTS];
+
+    // ─── INIT ─────────────────────────────────────────────────
+    window.addEventListener('DOMContentLoaded', () => renderList(allData));
+
+    // ─── SEARCH + SORT ────────────────────────────────────────
+    let searchTimer = null;
+    function handleSearch() {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(applyFilters, 250);
+    }
+
+    function applyFilters() {
+      const q = document.getElementById('searchInput').value.trim().toLowerCase();
+      const s = document.getElementById('sortSelect').value;
+
+      let list = MOCK_TOURNAMENTS.filter(t =>
+        !q ||
+        t.name.toLowerCase().includes(q) ||
+        t.sport.toLowerCase().includes(q) ||
+        t.location.toLowerCase().includes(q)
+      );
+
+      if (s === 'az')     list = [...list].sort((a,b) => a.name.localeCompare(b.name));
+      if (s === 'za')     list = [...list].sort((a,b) => b.name.localeCompare(a.name));
+      if (s === 'newest') list = [...list].sort((a,b) => new Date(b.date) - new Date(a.date));
+      if (s === 'slots')  list = [...list].sort((a,b) => b.slots_total - a.slots_total);
+
+      renderList(list);
+    }
+
+    // ─── RENDER CARD LIST ─────────────────────────────────────
+    function renderList(list) {
+      const c = document.getElementById('tournamentContainer');
+      const b = document.getElementById('countBadge');
+
+      if (!list.length) {
+        b.style.display = 'none';
+        c.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+            </div>
+            <h2>No Tournaments Found</h2>
+            <p>Try a different keyword or clear the filter.</p>
+          </div>`;
+        return;
+      }
+
+      b.textContent   = `${list.length} found`;
+      b.style.display = 'inline-block';
+
+      const grid = document.createElement('div');
+      grid.className = 'tournaments-grid';
+
+      list.forEach((t, i) => {
+        const live     = registrations[t.id] ? t.slots_taken + registrations[t.id] : t.slots_taken;
+        const left     = t.slots_total - live;
+        const isFull   = left <= 0;
+        const ds       = new Date(t.date).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+        const el       = document.createElement('div');
+        el.className   = 'card';
+        el.style.animationDelay = `${i * 60}ms`;
+        el.innerHTML = `
+          <div class="card-banner"></div>
+          <div class="card-body">
+            <span class="card-sport-tag">${esc(t.sport)}</span>
+            <div class="card-title">${esc(t.name)}</div>
+            <div class="card-meta">
+              <div class="card-meta-row">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                ${esc(t.location)}
+              </div>
+              <div class="card-meta-row">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                ${ds}&nbsp;·&nbsp;${esc(t.time)}
+              </div>
+            </div>
+          </div>
+          <div class="card-footer">
+            <div class="card-slots">
+              ${isFull
+                ? '<strong style="color:#e05555">FULL</strong>'
+                : `<strong>${left}</strong> slots left of ${t.slots_total}`}
+            </div>
+            <button class="card-join-btn" onclick="openDetail(${t.id})">View &amp; Join</button>
+          </div>`;
+        grid.appendChild(el);
+      });
+
+      c.innerHTML = '';
+      c.appendChild(grid);
+    }
+
+    // ─── OPEN DETAIL ──────────────────────────────────────────
+    function openDetail(id) {
+      const t = MOCK_TOURNAMENTS.find(x => x.id === id);
+      if (!t) return;
+      current = t;
+      showScreen('detailScreen');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      populateDetail(t);
+    }
+
+    function populateDetail(t) {
+      const extra   = registrations[t.id] || 0;
+      const taken   = t.slots_taken + extra;
+      const ds      = new Date(t.date).toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
+      const pct     = Math.round((taken / t.slots_total) * 100);
+      const full    = taken >= t.slots_total;
+      const alreadyJoined = extra > 0;
+      const btn     = document.getElementById('joinBtn');
+
+      // Hero gradient background
+      const hero = document.getElementById('dHeroBg');
+      hero.style.background = `linear-gradient(135deg, ${t.color} 0%, #fdb97d 100%)`;
+      hero.style.height = '100%';
+
+      // Draw a sport icon SVG on the hero
+      hero.innerHTML = `<svg width="120" height="120" viewBox="0 0 80 80" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="40" cy="40" r="26"/>
+        <line x1="40" y1="14" x2="40" y2="66"/>
+        <line x1="14" y1="40" x2="66" y2="40"/>
+        <path d="M40 14 C22 20 22 60 40 66" fill="none"/>
+        <path d="M40 14 C58 20 58 60 40 66" fill="none"/>
+      </svg>`;
+
+      set('dSport',      '', t.sport);
+      set('dName',       '', t.name);
+      set('dDate',       '', ds);        set('dDate2',  '', ds);
+      set('dTime',       '', t.time);    set('dTime2',  '', t.time);
+      set('dFormat',     '', t.format);
+      set('dFee',        '', t.entry_fee);
+      set('dDesc',       '', t.description);
+      set('dPrize',      '', t.prize);
+      set('dLocation',   '', t.location);
+      set('dOrgName',    '', t.organizer);
+      set('dOrgAvatar',  '', t.organizer.charAt(0).toUpperCase());
+      set('dSlotsTaken', '', `${taken} registered`);
+      set('dSlotsTotal', '', `${t.slots_total} total slots`);
+
+      document.getElementById('dSlotsBar').style.width = '0%';
+
+      if (alreadyJoined) {
+        btn.textContent = '✓ REGISTERED!';
+        btn.disabled    = true;
+        btn.className   = 'join-btn joined';
+        document.getElementById('fullNote').textContent = 'You have already registered for this tournament.';
+      } else if (full) {
+        btn.disabled    = true;
+        btn.className   = 'join-btn';
+        btn.textContent = 'CONFIRM REGISTRATION';
+        document.getElementById('fullNote').textContent = 'This tournament is already full.';
+      } else {
+        btn.disabled    = false;
+        btn.className   = 'join-btn';
+        btn.textContent = 'CONFIRM REGISTRATION';
+        document.getElementById('fullNote').textContent = '';
+      }
+
+      setTimeout(() => { document.getElementById('dSlotsBar').style.width = `${pct}%`; }, 150);
+    }
+
+    // ─── REGISTRATION MODAL ───────────────────────────────────
+    function openRegisterModal() {
+      if (!current) return;
+      document.getElementById('modalTournamentName').textContent = `Joining: ${current.name}`;
+      document.getElementById('regName').value   = '';
+      document.getElementById('regEmail').value  = '';
+      document.getElementById('modalError').textContent = '';
+      document.getElementById('regModal').classList.add('open');
+    }
+
+    function closeRegisterModal() {
+      document.getElementById('regModal').classList.remove('open');
+    }
+
+    function submitRegistration() {
+      const name  = document.getElementById('regName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const errEl = document.getElementById('modalError');
+      errEl.textContent = '';
+
+      if (!name)  { errEl.textContent = 'Please enter your full name.'; return; }
+      if (!email) { errEl.textContent = 'Please enter your email address.'; return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errEl.textContent = 'Please enter a valid email address.'; return;
+      }
+
+      const btn = document.getElementById('modalSubmitBtn');
+      btn.disabled    = true;
+      btn.textContent = 'REGISTERING…';
+
+      // Simulate a network delay
+      setTimeout(() => {
+        registrations[current.id] = (registrations[current.id] || 0) + 1;
+        closeRegisterModal();
+        populateDetail(current);
+        showToast(`✓ Registered for ${current.name}!`);
+        applyFilters(); // refresh card list counts
+        btn.disabled    = false;
+        btn.textContent = 'REGISTER';
+      }, 800);
+    }
+
+    // ─── TOAST ────────────────────────────────────────────────
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    // ─── HELPERS ──────────────────────────────────────────────
+    function set(id, attr, val) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = val || '';
+    }
+
+    function esc(str) {
+      return String(str ?? '')
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function goBack() {
+      showScreen('listScreen');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.getElementById('regModal').addEventListener('click', e => {
+      if (e.target === document.getElementById('regModal')) closeRegisterModal();
+    });
+  </script>
+</body>
+</html>
