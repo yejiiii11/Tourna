@@ -17,7 +17,11 @@ if ($result->num_rows > 0) {
         session_regenerate_id(true);
         $_SESSION['username'] = $row['username'];
         $_SESSION['role']     = $row['role'];
-        header("Location: dashboard.php");
+        if (in_array($row['role'], ['organizer', 'admin'], true)) {
+            header("Location: dashboard.php");
+        } else {
+            header("Location: ../Tournameet/index.html");
+        }
         exit;
     } else {
         echo "Invalid password!";

@@ -41,8 +41,8 @@ $isPast = isTournamentPast($row);
     <link rel="stylesheet" href="style.css">
     <style>
         body { font-family: "Plus Jakarta Sans", "Segoe UI", sans-serif; background:#fffaf4; margin:0; }
-        .container { max-width: 920px; margin: 0 auto; padding: 28px 20px 36px; }
-        .card { background:#fff; border:1px solid #f0d4b7; border-radius:14px; box-shadow:0 10px 24px rgba(180,93,17,.1); padding:20px; }
+        .container { width:min(96vw, 1700px); margin:0 auto; padding:28px 20px 36px; }
+        .card { width:100%; background:#fff; border:1px solid #f0d4b7; border-radius:14px; box-shadow:0 10px 24px rgba(180,93,17,.1); padding:24px; }
         .row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
         .input-group { margin-bottom:12px; }
         .input-group label { display:block; margin-bottom:6px; font-weight:600; font-size:13px; }

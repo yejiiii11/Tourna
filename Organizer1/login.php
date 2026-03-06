@@ -1,7 +1,11 @@
 <?php
 require_once "session_bootstrap.php";
 if (isset($_SESSION['username'])) {
-    header('Location: dashboard.php');
+    if (in_array($_SESSION['role'] ?? '', ['organizer', 'admin'], true)) {
+        header('Location: dashboard.php');
+    } else {
+        header('Location: ../Tournameet/index.html');
+    }
     exit;
 }
 ?>

@@ -1,41 +1,193 @@
 <?php
 require_once "session_bootstrap.php";
 if (isset($_SESSION['username'])) {
-    header('Location: dashboard.php');
+    if (in_array($_SESSION['role'] ?? '', ['organizer', 'admin'], true)) {
+        header('Location: dashboard.php');
+    } else {
+        header('Location: ../Tournameet/index.html');
+    }
     exit;
 }
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Tournameet</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-p8Uhty22XkR4znkbN6w0+jZ8pO0ZL2wMUgGx+2qQPtjc6L3W7llhLj6Xb5zB4sga7zBxsAh3cY3bIvG/7oifCw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TournaMeet Organizer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --orange: #F47B20;
+            --orange-dark: #D96210;
+            --orange-light: #FFF0E6;
+            --white: #FFFFFF;
+            --shadow: 0 2px 16px rgba(244,123,32,0.18);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            min-height: 100vh;
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(180deg, #fff7ef 0%, #fafafa 100%);
+            color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+        }
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            background: var(--white);
+            border-bottom: 2px solid var(--orange);
+            box-shadow: var(--shadow);
+        }
+        .brand {
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 2px;
+            font-size: 1.7rem;
+            color: var(--orange);
+            text-decoration: none;
+        }
+        .nav-links {
+            display: flex;
+            gap: 10px;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: var(--orange);
+            border: 1.5px solid var(--orange);
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            transition: all .2s ease;
+        }
+        .nav-links a:hover {
+            background: var(--orange);
+            color: #fff;
+        }
+        .page {
+            width: 100%;
+            max-width: 980px;
+            margin: auto;
+            padding: 36px 20px 50px;
+            display: grid;
+            gap: 22px;
+        }
+        .hero {
+            background: var(--white);
+            border-radius: 16px;
+            border: 1.5px solid #f0e0d0;
+            box-shadow: 0 4px 22px rgba(244,123,32,0.1);
+            padding: 28px;
+        }
+        .hero h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 2px;
+            color: var(--orange);
+            font-size: clamp(2rem, 6vw, 3.1rem);
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+        .hero p {
+            color: #666;
+            line-height: 1.7;
+            max-width: 680px;
+            margin-bottom: 20px;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            text-decoration: none;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 18px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: transform .15s ease, background .2s ease;
+        }
+        .btn-primary {
+            background: linear-gradient(120deg, var(--orange), var(--orange-dark));
+            color: #fff;
+        }
+        .btn-secondary {
+            background: var(--orange-light);
+            color: #8f4300;
+            border: 1px solid #ffd1aa;
+        }
+        .btn:hover { transform: translateY(-1px); }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+        .card {
+            background: #fff;
+            border: 1px solid #f1e2d3;
+            border-radius: 12px;
+            padding: 16px;
+        }
+        .card h3 {
+            font-family: 'Bebas Neue', sans-serif;
+            letter-spacing: 1px;
+            color: #d06510;
+            margin-bottom: 6px;
+            font-size: 1.25rem;
+        }
+        .card p {
+            font-size: 0.85rem;
+            color: #777;
+            line-height: 1.6;
+        }
+        @media (max-width: 820px) {
+            .cards { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
-<body class="landing-body">
-
-    <div class="landing-container" style="max-width:400px; text-align:center;">
-        <h1 style="font-size:36px; margin-bottom:0;">Tournameet</h1>
-        <p style="margin:5px 0 30px; font-style:italic;font-size:14px;">Where athletes meet opportunities</p>
-
-        <!-- email style input and continue button to mimic screenshot -->
-        <div style="margin-bottom:20px;">
-            <input type="email" placeholder="Enter your email" style="width:100%; padding:12px 15px; border-radius:8px; border:1px solid #ccc;">
+<body>
+    <nav>
+        <a class="brand" href="index.php">TournaMeet Organizer</a>
+        <div class="nav-links">
+            <a href="login.php">Login</a>
+            <a href="register.php">Register</a>
         </div>
-        <a href="register.php" class="btn" style="width:100%; background:#000; color:#fff;">Continue</a>
+    </nav>
+    <main class="page">
+        <section class="hero">
+            <h1>Create And Manage Tournaments</h1>
+            <p>
+                Organizer and athlete now share one tournament system. Create tournaments here, and they automatically
+                appear in the athlete TournaMeet pages for registration.
+            </p>
+            <div class="actions">
+                <a class="btn btn-primary" href="register.php">Start as Organizer</a>
+                <a class="btn btn-secondary" href="login.php">I Already Have an Account</a>
+            </div>
+        </section>
 
-        <div style="margin-top:20px;">
-            <button class="btn" style="width:100%; background:#fff; color:#000; margin-bottom:10px;">
-                <i class="fab fa-google" style="margin-right:8px;"></i>Continue with Google
-            </button>
-            <button class="btn" style="width:100%; background:#fff; color:#000;">
-                <i class="fab fa-apple" style="margin-right:8px;"></i>Continue with Apple
-            </button>
-        </div>
-        <div style="margin-top:20px;">
-            <a href="login.php" class="btn btn-outline" style="width:100%;">Login instead</a>
-        </div>
-    </div>
-
+        <section class="cards">
+            <article class="card">
+                <h3>Publish</h3>
+                <p>Set title, schedule, location, slots, and fees with live preview before posting.</p>
+            </article>
+            <article class="card">
+                <h3>Receive Joiners</h3>
+                <p>Athlete registrations from TournaMeet are saved to your joiner list automatically.</p>
+            </article>
+            <article class="card">
+                <h3>Review</h3>
+                <p>Approve, reject, or waitlist participants and export approved joiners as CSV.</p>
+            </article>
+        </section>
+    </main>
 </body>
 </html>
